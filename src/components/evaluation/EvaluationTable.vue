@@ -70,6 +70,7 @@
               :key="status"
               :active="filterTypes[status].enabled"
               :aria-selected="filterTypes[status].enabled"
+              :disabled="disableControls"
               color="primary"
               class="mr-1 rounded-pill text-uppercase"
               height="30"
