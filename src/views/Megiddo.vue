@@ -10,7 +10,7 @@
       <v-row>
         <v-col cols="12" md="6">
           <div v-if="size(confirmed)" class="pb-3 pt-2">
-            <h2 class="align-with-term-exports">Rows confirmed for publication</h2>
+            <h2 class="align-with-term-exports">Confirmed for publication</h2>
             <ul id="confirmed-list" class="pl-4">
               <li v-for="(department, index) in confirmed" :key="index">
                 {{ department.deptName }} <span class="text-muted">({{ department.count }})</span>
@@ -91,7 +91,7 @@
         </v-col>
       </v-row>
       <div class="pt-6">
-        <h2 class="mb-1">Rows with outstanding errors</h2>
+        <h2 class="mb-1">Outstanding errors</h2>
         <EvaluationTable :readonly="true" />
       </div>
     </v-container>
