@@ -45,7 +45,7 @@ export const useContextStore = defineStore('context', {
       isLive: false
     },
     snackbar: {
-      color: 'primary',
+      color: 'info',
       text: undefined as string | undefined,
       timeout: 8000
     },
@@ -108,9 +108,13 @@ export const useContextStore = defineStore('context', {
       this.snackbar.text = undefined
       alertScreenReader('Message closed')
     },
+    snackbarHide() {
+      this.snackbarShow = false
+      this.snackbar.text = undefined
+    },
     snackbarOpen(text: string, color?: string) {
       this.snackbar.text = text
-      this.snackbar.color = color || 'secondary'
+      this.snackbar.color = color || 'info'
       this.snackbarShow = true
     },
     snackbarReportError(text: string) {

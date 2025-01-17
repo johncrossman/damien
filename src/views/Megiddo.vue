@@ -17,18 +17,28 @@
               </li>
             </ul>
           </div>
-          <div v-if="size(blockers)">
-            <v-icon color="error" :icon="mdiAlertCircle" />
-            Publication is blocked by errors in departments:
-            <ul id="blocker-list" class="pl-4">
-              <li v-for="(count, deptName) in blockers" :key="deptName">
-                {{ deptName }} ({{ count }})
-              </li>
-            </ul>
+          <div id="blockers" aria-live="assertive" role="alert">
+            <v-alert
+              v-if="size(blockers)"
+              class="my-3 alert-blockers"
+              density="compact"
+              :icon="mdiAlertCircle"
+              :role="undefined"
+              title="Publication is blocked by errors in departments:"
+              type="error"
+              variant="tonal"
+            >
+              <ul id="blocker-list" class="pl-4">
+                <li v-for="(count, deptName) in blockers" :key="deptName">
+                  {{ deptName }} ({{ count }})
+                </li>
+              </ul>
+            </v-alert>
           </div>
           <ProgressButton
             id="publish-btn"
             :action="publish"
+            aria-describedby="blockers"
             color="secondary"
             :disabled="isExporting || !!size(blockers) || !evaluations.length"
             :in-progress="isExporting"
@@ -56,7 +66,7 @@
           >
             <v-expansion-panel class="border-sm">
               <v-expansion-panel-title id="term-exports-btn" class="term-exports-btn text-no-wrap">
-                <h2 class="text-primary">Term Exports</h2>
+                <h2>Term Exports</h2>
               </v-expansion-panel-title>
               <v-expansion-panel-text v-if="isEmpty(termExports)" class="border-t-sm pt-3">
                 <div id="term-exports-no-data">
@@ -106,7 +116,7 @@ import TermSelect from '@/components/util/TermSelect'
 import {DateTime} from 'luxon'
 import {alertScreenReader, putFocusNextTick, toLocaleFromISO} from '@/lib/utils'
 import {exportEvaluations, getConfirmed, getExportStatus, getExports, getValidation} from '@/api/evaluations'
-import {find, isEmpty, size, sortBy} from 'lodash'
+import {filter, find, groupBy, isEmpty, mapValues, size, sortBy} from 'lodash'
 import {mdiAlertCircle, mdiRefresh, mdiTrayArrowDown} from '@mdi/js'
 import {nextTick, onMounted, ref} from 'vue'
 import {useContextStore} from '@/stores/context'
@@ -127,7 +137,7 @@ const termExports = ref([])
 onMounted(() => refresh())
 
 const onUpdateStatus = () => {
-  updateStatus().then(() => putFocusNextTick('status-btn'))
+  updateStatus().then(() => putFocusNextTick('status-btn', {scroll: false}))
 }
 
 const publish = () => {
@@ -135,7 +145,7 @@ const publish = () => {
   alertScreenReader('Publishing.')
   exportEvaluations(contextStore.selectedTermId).then(() => {
     contextStore.snackbarOpen('Publication has started and will run in the background.')
-    putFocusNextTick('publish-btn')
+    putFocusNextTick('publish-btn', {scroll: false})
   })
 }
 
@@ -149,6 +159,8 @@ const refresh = () => {
     updateStatus()
   ]).then(responses => {
     departmentStore.setEvaluations(sortBy(responses[0], 'sortableCourseName'))
+    const blockerEvals = filter(responses[0], {'valid': false, 'status': 'confirmed'})
+    blockers.value = mapValues(groupBy(blockerEvals, e => e.department.name), 'length')
     confirmed.value = responses[1]
     termExports.value = responses[2]
     contextStore.loadingComplete(`Publish ${contextStore.selectedTermName || ''}`)
@@ -159,10 +171,9 @@ const updateStatus = async () => {
   isUpdatingStatus.value = true
   try {
     const response = await getExportStatus()
-    isExporting.value = false
     if (!isEmpty(response)) {
       const lastUpdate = DateTime.fromISO(response.updatedAt)
-      if (DateTime.now().diff(lastUpdate, ['hours']) < 1) {
+      if (DateTime.now().diff(lastUpdate, ['hours']).as('hours') < 1) {
         showStatus(response)
       }
     }
@@ -176,20 +187,28 @@ const updateStatus = async () => {
 const showStatus = termExport => {
   const exportLabel = toLocaleFromISO(termExport.createdAt, dateFormat)
   const term = find(contextStore.config.availableTerms, {'id': termExport.termId})
-  if (termExport.status === 'success') {
-    contextStore.snackbarOpen(
-      `Success! Publication of ${term.name} term export <b>${exportLabel || ''}</b> is complete.`,
-      'success'
-    )
-  } else if (termExport.status === 'error') {
-    contextStore.snackbarReportError(`Error: Publication of ${term.name} term export <b>${exportLabel || ''}</b> failed.`)
-  } else {
-    isExporting.value = true
-  }
+  contextStore.snackbarHide()
+  nextTick(() => {
+    if (termExport.status === 'success') {
+      isExporting.value = false
+      contextStore.snackbarOpen(
+        `Success! Publication of ${term.name} term export <b>${exportLabel || ''}</b> is complete.`,
+        'success'
+      )
+    } else if (termExport.status === 'error') {
+      isExporting.value = false
+      contextStore.snackbarReportError(`Error: Publication of ${term.name} term export <b>${exportLabel || ''}</b> failed.`)
+    } else if (termExport.status === 'started') {
+      contextStore.snackbarOpen('Publication in progress.')
+    }
+  })
 }
 </script>
 
 <style scoped>
+:deep(.alert-blockers.v-theme--dark .v-alert__underlay) {
+  opacity: 0.08 !important;
+}
 .align-with-term-exports {
   margin-top: 2px;
 }
