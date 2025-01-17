@@ -2,12 +2,12 @@
   <v-snackbar
     v-model="snackbarShow"
     :color="snackbar.color"
-    content-class="align-center"
-    light
+    content-class="align-center bg-white"
+    location="top"
     max-width="unset"
     multi-line
     :timeout="snackbar.timeout"
-    :top="true"
+    variant="tonal"
   >
     <div class="d-flex align-center justify-space-between">
       <div

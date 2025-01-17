@@ -1015,6 +1015,9 @@ tr.border-top-none td {
   position: relative;
   top: 2px;
 }
+.bg-primary-contrast a {
+  color: rgb(var(--v-theme-anchor-darken-2));
+}
 .evaluation-form-btn {
   width: 150px;
 }

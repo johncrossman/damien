@@ -105,7 +105,7 @@
         v-if="required && !suppressValidation && errors && errors[0]"
         :id="`${idPrefix}-error`"
         class="v-messages text-error px-3 mt-1"
-        :class="theme.global.current.value.dark ? 'text--lighten-2' : ''"
+        :class="theme.global.current.value.dark ? 'text-error-lighten-2' : ''"
       >
         {{ errors[0] }}
       </div>

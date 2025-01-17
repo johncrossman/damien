@@ -102,9 +102,9 @@ export default createVuetify({
   },
   theme: {
     variations: {
-      colors: ['error'],
-      lighten: 3,
-      darken: 1
+      colors: ['anchor', 'error'],
+      lighten: 2,
+      darken: 2
     },
     themes: {
       light: {
