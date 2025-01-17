@@ -1,6 +1,7 @@
 <template>
   <div class="date-picker d-flex position-relative">
     <DatePicker
+      ref="datePicker"
       v-model.date="model"
       :disabled="disabled"
       :input-debounce="500"
@@ -54,7 +55,7 @@
       :aria-label="`Clear ${ariaLabel}`"
       class="v-btn clear-button"
       :disabled="disabled"
-      @click.stop.prevent="event => onClickClear(event, dateInputEvents)"
+      @click.stop.prevent="event => onClickClear(event)"
     >
       <v-icon
         color="secondary"
@@ -136,6 +137,7 @@ const model = defineModel({
   type: Date
 })
 const dateInputEvents = ref(undefined)
+const datePicker = ref()
 const inputId = `${props.idPrefix}-input`
 const isPopoverVisible = ref(false)
 const popover = ref()
@@ -152,6 +154,7 @@ onMounted(() => {
   document.getElementById(inputId)?.setAttribute('role', 'combobox')
   // Workaround for https://github.com/nathanreyes/v-calendar/issues/1459
   document.getElementById(props.containerId)?.addEventListener('keydown', onKeydownPreventClick)
+  dateInputEvents.value = datePicker.value.inputEvents
 })
 
 const isMonthNavBtn = el => el.id === `${props.idPrefix}-popover-next-month-btn` || el.id === `${props.idPrefix}-popover-prev-month-btn`
@@ -221,11 +224,11 @@ const makeNavAccessible = () => {
   }
 }
 
-const onClickClear = (e, inputEvents) => {
+const onClickClear = (e) => {
   const inputElement = document.getElementById(inputId)
   if (inputElement) {
     inputElement.value = ''
-    inputEvents.change(e)
+    dateInputEvents.value.change(e)
     alertScreenReader('Cleared')
     putFocusNextTick(inputId)
     model.value = undefined

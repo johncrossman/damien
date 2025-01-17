@@ -497,6 +497,12 @@
                     :placement="rowIndex > 3 ? 'top' : 'bottom'"
                     :set-value="selectedDate => selectedStartDate = selectedDate"
                   />
+                  <EvaluationError
+                    v-if="!selectedStartDate"
+                    id="error-msg-evaluation-start-date"
+                    color="white"
+                    message="Required"
+                  />
                 </div>
               </td>
             </tr>
