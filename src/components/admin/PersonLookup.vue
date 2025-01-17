@@ -6,7 +6,7 @@
         :for="`${idPrefix}-input`"
         :class="labelClass"
       >
-        <span v-if="label">{{ label }} {{ placeholder }}</span>
+        <span v-if="label">{{ label }} <span class="sr-only">{{ placeholder }}</span></span>
       </label>
     </div>
     <div :id="`${idPrefix}-container`" :class="{'v-col v-col-6': inline}">
@@ -249,6 +249,7 @@ const getUserLabel = user => `${user.firstName} ${user.lastName} (${user.uid})`
 const onClearInput = () => {
   query.value = selected.value = null
   suggestions.value = []
+  props.onSelectResult(null)
   alertScreenReader('Cleared.')
   putFocusNextTick(`${props.idPrefix}-input`)
 }
@@ -276,7 +277,7 @@ const onSelectItem = item => {
   }
   props.onSelectResult(selected.value)
   suggestions.value = []
-  container.value.search = ''
+  query.value = ''
 }
 
 const onToggleMenu = isOpen => {
