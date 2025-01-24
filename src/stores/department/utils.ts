@@ -37,9 +37,7 @@ export function validateDuplicable(evaluationIds: number[], fields: any) {
 
 export function validateMarkAsDone(selectedEvaluations: any[]): string | undefined {
   let warningMessage: string | undefined = undefined
-  const now = DateTime.now()
-  const nowISODate = now.toISODate()
-  const evaluationsInProgress = filter(selectedEvaluations, e => nowISODate > DateTime.fromJSDate(e.startDate).toFormat('MM/dd/yy'))
+  const evaluationsInProgress = filter(selectedEvaluations, e => DateTime.now() > DateTime.fromJSDate(e.startDate))
   if (evaluationsInProgress.length) {
     // Grab the first in-progress evaluation, to give the user an example of the problem.
     const e = evaluationsInProgress[0]
