@@ -51,13 +51,13 @@
             <EvaluationActions v-if="!readonly" :reset="() => duplicatingEvaluationId = null" />
           </div>
         </div>
-        <div class="align-center d-flex flex-wrap pt-2 pb-1">
+        <div class="align-center d-flex flex-wrap pt-2">
           <div class="mr-2">Show statuses:</div>
           <v-btn-toggle
             v-model="selectedFilterTypes"
             aria-controls="evaluation-table"
             borderless
-            class="status-filter"
+            class="status-filter d-flex flex-wrap"
             color="primary"
             density="compact"
             flat
@@ -72,7 +72,7 @@
               :aria-selected="filterTypes[status].enabled"
               :disabled="disableControls"
               color="primary"
-              class="mr-1 rounded-pill text-uppercase"
+              class="mb-1 mr-1 rounded-pill text-uppercase"
               height="30"
               size="small"
               :value="status"
