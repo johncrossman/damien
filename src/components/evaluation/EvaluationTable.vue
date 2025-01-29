@@ -512,12 +512,12 @@
                 <div class="d-flex justify-end">
                   <ConfirmDialog
                     v-if="markAsDoneWarning"
-                    confirm-button-label="Proceed"
+                    hide-confirm="true"
                     :disabled="disableControls"
-                    :on-click-cancel="() => markAsDoneWarning = undefined"
-                    :on-click-confirm="onProceedMarkAsDone"
-                    :text="markAsDoneWarning.message"
+                    :html="markAsDoneWarning.message"
                     :icon="mdiAlertCircle"
+                    :on-click-cancel="() => markAsDoneWarning = undefined"
+                    :on-click-confirm="noop"
                     title="Warning"
                   />
                   <ProgressButton
@@ -899,13 +899,6 @@ const onEditEvaluation = evaluation => {
     selectedStartDate.value = evaluation.startDate
     putFocusNextTick(`${props.readonly ? '' : 'select-evaluation-status'}`)
   }
-}
-
-const onProceedMarkAsDone = () => {
-  const evaluation = markAsDoneWarning.value.evaluation
-  const fields = markAsDoneWarning.value.fields
-  markAsDoneWarning.value = undefined
-  updateEvaluation(evaluation, fields)
 }
 
 const rowId = (evaluation, rowIndex) => {
