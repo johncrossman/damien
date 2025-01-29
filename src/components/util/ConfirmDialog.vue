@@ -15,10 +15,12 @@
           </h3>
         </div>
       </v-card-title>
-      <v-card-text class="pt-3">{{ text }}</v-card-text>
+      <v-card-text v-if="!html" class="pt-3">{{ text }}</v-card-text>
+      <v-card-text v-if="html" class="pt-3" v-html="html"></v-card-text>
       <v-card-actions>
         <div class="align-center d-flex pb-3 pr-4">
           <ProgressButton
+            v-if="!hideConfirm"
             id="confirm-dialog-btn"
             :action="onClickConfirm"
             class="mr-2"
@@ -60,6 +62,15 @@ const props = defineProps({
   disabled: {
     required: false,
     type: Boolean
+  },
+  hideConfirm: {
+    required: false,
+    type: Boolean
+  },
+  html: {
+    default: null,
+    required: false,
+    type: String
   },
   icon: {
     default: undefined,

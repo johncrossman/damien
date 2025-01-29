@@ -92,12 +92,12 @@
     </UpdateEvaluations>
     <ConfirmDialog
       v-if="markAsDoneWarning"
-      confirm-button-label="Proceed"
+      hide-confirm="true"
       :disabled="disableControls"
+      :html="markAsDoneWarning"
       :icon="mdiAlertCircle"
       :on-click-cancel="() => markAsDoneWarning = undefined"
-      :on-click-confirm="onProceedMarkAsDone"
-      :text="markAsDoneWarning"
+      :on-click-confirm="noop"
       title="Warning"
     />
   </div>
@@ -108,7 +108,7 @@ import ConfirmDialog from '@/components/util/ConfirmDialog'
 import UpdateEvaluations from '@/components/evaluation/UpdateEvaluations'
 import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
-import {chain, each, every, filter as _filter, get, has, includes, map, uniq} from 'lodash'
+import {chain, each, every, filter as _filter, get, has, includes, map, noop, uniq} from 'lodash'
 import {computed, inject, onMounted, ref, watch} from 'vue'
 import {mdiAlertCircle} from '@mdi/js'
 import {storeToRefs} from 'pinia'
@@ -300,11 +300,6 @@ const onConfirmEdit = options => {
   if (!markAsDoneWarning.value) {
     validateAndUpdate('edit')
   }
-}
-
-const onProceedMarkAsDone = () => {
-  markAsDoneWarning.value = null
-  validateAndUpdate(isEditing.value ? 'edit' : 'confirm')
 }
 
 const getEvaluationFieldsForUpdate = key => {
