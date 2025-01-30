@@ -25,8 +25,10 @@
         :items="departments"
         :items-per-page="-1"
         must-sort
+        :sort-by="sortBy"
         @mouseleave="() => hoveredDept = null"
         @focusout="() => hoveredDept = null"
+        @update:sort-by="onUpdateSortBy"
       >
         <template #body="{items}">
           <template v-for="(department, deptIndex) in items">
@@ -175,9 +177,9 @@
 <script setup>
 import BooleanIcon from '@/components/util/BooleanIcon'
 import PageHeader from '@/components/util/PageHeader'
-import {getCatalogListings} from '@/lib/utils'
+import {alertScreenReader, getCatalogListings} from '@/lib/utils'
+import {find, isEmpty, size} from 'lodash'
 import {getDepartmentsEnrolled} from '@/api/departments'
-import {isEmpty, size} from 'lodash'
 import {onMounted, ref} from 'vue'
 import {storeToRefs} from 'pinia'
 import {useContextStore} from '@/stores/context'
@@ -187,7 +189,7 @@ const contextStore = useContextStore()
 const {config} = storeToRefs(contextStore)
 const departments = ref([])
 const headers = [
-  {class: 'text-no-wrap', sortable: true, title: 'Department', value: 'deptName', width: 100},
+  {key: 'deptName', class: 'text-no-wrap', sortable: true, title: 'Department', value: 'deptName', width: 100},
   {class: 'text-no-wrap', sortable: false, title: 'Courses', width: 10},
   {class: 'text-no-wrap', sortable: false, title: 'Contacts', width: 200},
   {class: 'text-no-wrap', sortable: false, title: 'UID', width: 10},
@@ -196,6 +198,7 @@ const headers = [
   {class: 'text-no-wrap', sortable: false, title: 'Blue Access', width: 190},
 ]
 const hoveredDept = ref(undefined)
+const sortBy = ref([])
 const theme = useTheme()
 
 onMounted(() => {
@@ -205,6 +208,16 @@ onMounted(() => {
     contextStore.loadingComplete('Group Management')
   })
 })
+
+const onUpdateSortBy = primarySortBy => {
+  const key = primarySortBy[0].key
+  const header = find(headers, {key: key})
+  const order = primarySortBy[0].order
+  sortBy.value = primarySortBy
+  if (header) {
+    alertScreenReader(`Sorted by ${header.ariaLabel || header.title}, ${order}ending`)
+  }
+}
 
 const subRowClass = (subIndex, subItems) => {
   return subIndex + 1 < subItems.length ? 'borderless' : ''

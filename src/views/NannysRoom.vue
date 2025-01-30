@@ -82,12 +82,14 @@
                   id="dept-forms-table"
                   density="compact"
                   disable-pagination
-                  :headers="[{key: 'name', class: 'pl-3', sortable: true, title: 'Form Name', value: 'name'}]"
+                  :headers="departmentFormHeaders"
                   hide-default-footer
                   :items="departmentForms"
                   :items-per-page="-1"
                   item-key="name"
+                  must-sort
                   :sort-by="sortBy.departmentForms"
+                  @update:sort-by="onSortDepartmentForms"
                 >
                   <template #headers="{columns, isSorted, toggleSort, getSortIcon, sortBy: _sortBy}">
                     <SortableTableHeader
@@ -185,12 +187,14 @@
                   id="evaluation-types-table"
                   density="compact"
                   disable-pagination
-                  :headers="[{key: 'name', class: 'pl-3', sortable: true, title: 'Type Name', value: 'name'}]"
+                  :headers="evaluationTypeHeaders"
                   hide-default-footer
                   :items="evaluationTypes"
                   :items-per-page="-1"
                   item-key="name"
+                  must-sort
                   :sort-by="sortBy.evaluationTypes"
+                  @update:sort-by="onSortEvaluationTypes"
                 >
                   <template #headers="{columns, isSorted, toggleSort, getSortIcon, sortBy: _sortBy}">
                     <SortableTableHeader
@@ -370,6 +374,7 @@
                   :items="instructors"
                   :items-per-page="-1"
                   :sort-by="sortBy.instructors"
+                  @update:sort-by="onSortInstructors"
                 >
                   <template #headers="{columns, isSorted, toggleSort, getSortIcon, sortBy: _sortBy}">
                     <SortableTableHeader
@@ -455,7 +460,7 @@ import PageHeader from '@/components/util/PageHeader'
 import ProgressButton from '@/components/util/ProgressButton.vue'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
 import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
-import {get, trim} from 'lodash'
+import {get, find, size, trim} from 'lodash'
 import {getAutoPublishStatus, setAutoPublishStatus} from '@/api/config'
 import {mdiPlusThick, mdiTrashCan} from '@mdi/js'
 import {onMounted, ref} from 'vue'
@@ -480,6 +485,12 @@ const {
   isConfirming,
   isSaving
 } = storeToRefs(listStore)
+const departmentFormHeaders = [
+  {key: 'name', class: 'pl-3', sortable: true, title: 'Form Name', value: 'name'}
+]
+const evaluationTypeHeaders = [
+  {key: 'name', class: 'pl-3', sortable: true, title: 'Type Name', value: 'name'}
+]
 const instructorHeaders = [
   {key: 'uid', class: 'pl-0 pr-2', sortable: true, title: 'UID', value: 'uid'},
   {key: 'csid', class: 'pl-0 pr-2', sortable: true, title: 'SID', value: 'csid'},
@@ -567,6 +578,38 @@ const onClickAddInstructor = () => {
     resetNewInstructor()
     putFocusNextTick('input-instructor-uid')
   })
+}
+
+const onSortDepartmentForms = primarySortBy => {
+  const key = primarySortBy[0].key
+  const header = find(departmentFormHeaders, {key: key})
+  const order = primarySortBy[0].order
+  sortBy.value.departmentForms = primarySortBy
+  if (header) {
+    alertScreenReader(`Sorted department forms by ${header.ariaLabel || header.title}, ${order}ending`)
+  }
+}
+const onSortEvaluationTypes = primarySortBy => {
+  const key = primarySortBy[0].key
+  const header = find(evaluationTypeHeaders, {key: key})
+  const order = primarySortBy[0].order
+  sortBy.value.evaluationTypes = primarySortBy
+  if (header) {
+    alertScreenReader(`Sorted evaluation types by ${header.ariaLabel || header.title}, ${order}ending`)
+  }
+}
+const onSortInstructors = primarySortBy => {
+  if (size(primarySortBy)) {
+    const key = primarySortBy[0].key
+    const header = find(instructorHeaders, {key: key})
+    const order = primarySortBy[0].order
+    sortBy.value.instructors = primarySortBy
+    if (header) {
+      alertScreenReader(`Sorted instructors by ${header.ariaLabel || header.title}, ${order}ending`)
+    }
+  } else {
+    alertScreenReader('Default sort order restored to instructors.')
+  }
 }
 
 const onSubmitAddDepartmentForm = () => {

@@ -124,9 +124,11 @@
       :items="visibleEvaluations"
       items-per-page="-1"
       :loading="contextStore.loading"
+      must-sort
       :search="searchFilter"
       :sort-by="sortBy"
       @update:current-items="onChangeSearchFilter"
+      @update:sort-by="onUpdateSortBy"
     >
       <template #headers="{columns, isSorted, toggleSort, getSortIcon, sortBy: _sortBy}">
         <SortableTableHeader
@@ -725,7 +727,7 @@ onMounted(() => {
     evaluationHeaders.value.unshift({key: 'departmentId', class: 'pl-1 text-no-wrap', headerProps: {width: '15%'}, sortable: true, title: 'Department', value: 'department.id'})
   } else if (allowEdits.value) {
     evaluationHeaders.value.unshift(
-      {key: 'select', class: 'pl-1 text-no-wrap', headerProps: {justifyItems: 'center', width: '3%'}, sortable: true, title: 'Select', value: 'isSelected'}
+      {key: 'select', ariaLabel: 'Selected', class: 'pl-1 text-no-wrap', headerProps: {justifyItems: 'center', width: '3%'}, sortable: true, title: 'Select', value: 'isSelected'}
     )
   }
   departmentForms.value = [{id: null, name: 'Revert'}].concat(departmentStore.activeDepartmentForms)
@@ -898,6 +900,20 @@ const onEditEvaluation = evaluation => {
     selectedEvaluationType.value = get(evaluation, 'evaluationType.id')
     selectedStartDate.value = evaluation.startDate
     putFocusNextTick(`${props.readonly ? '' : 'select-evaluation-status'}`)
+  }
+}
+
+const onUpdateSortBy = primarySortBy => {
+  if (size(primarySortBy)) {
+    const key = primarySortBy[0].key
+    const header = find(evaluationHeaders.value, {key: key})
+    const order = primarySortBy[0].order
+    sortBy.value = primarySortBy
+    if (header) {
+      alertScreenReader(`Sorted by ${header.ariaLabel || header.title}, ${order}ending`)
+    }
+  } else {
+    alertScreenReader('Default sort order restored.')
   }
 }
 
