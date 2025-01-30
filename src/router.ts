@@ -1,13 +1,13 @@
 import auth from './auth'
-import BaseView from '@/views/BaseView.vue'
-import Department from '@/views/Department.vue'
-import Error from '@/views/Error.vue'
-import Login from '@/views/Login.vue'
-import Megiddo from '@/views/Megiddo.vue'
-import NannysRoom from '@/views/NannysRoom.vue'
-import NotFound from '@/views/NotFound.vue'
-import StatusBoard from '@/views/StatusBoard.vue'
-import TheMonastery from '@/views/TheMonastery.vue'
+const BaseView = () => import('@/views/BaseView.vue')
+const Department = () => import('@/views/Department.vue')
+const Error = () => import('@/views/Error.vue')
+const Login = () => import('@/views/Login.vue')
+const Megiddo = () => import('@/views/Megiddo.vue')
+const NannysRoom = () => import('@/views/NannysRoom.vue')
+const NotFound = () => import('@/views/NotFound.vue')
+const StatusBoard = () => import('@/views/StatusBoard.vue')
+const TheMonastery = () => import('@/views/TheMonastery.vue')
 import {capitalize, find, get, size, sortBy, trim} from 'lodash'
 import {createRouter, createWebHistory, RouteRecordRaw} from 'vue-router'
 import {getEvaluationTerm} from '@/api/evaluationTerms'
