@@ -78,7 +78,7 @@
                 <div class="d-flex align-top">
                   <router-link
                     :id="`link-to-dept-${kebabCase(department.deptName)}`"
-                    class="text-accent"
+                    class="text-accent font-weight-bold"
                     :to="`/department/${department.id}`"
                   >
                     {{ department.deptName }}
@@ -95,29 +95,31 @@
                 <v-chip
                   v-if="department.totalInError"
                   :id="`errors-count-dept-${department.id}`"
-                  class="error text-error error-count"
+                  class="error-count px-2"
+                  color="error"
+                  size="small"
                   variant="outlined"
-                  small
                 >
-                  {{ department.totalInError }} <span class="sr-only">errors</span>
+                  <span :aria-hidden="true">{{ department.totalInError }}</span>
+                  <span class="sr-only">{{ pluralize('error', department.totalInError) }}</span>
                 </v-chip>
                 <v-icon
                   v-if="!department.totalInError"
-                  aria-hidden="false"
+                  :aria-hidden="false"
                   aria-label="no errors"
-                  class="text-success"
+                  class="text-success ml-1"
                   :icon="mdiCheckCircle"
-                  role="img"
+                  role="presentation"
                 />
               </td>
               <td class="department-confirmed">
                 <v-icon
                   v-if="department.totalConfirmed > 0 && department.totalConfirmed === department.totalEvaluations"
-                  aria-hidden="false"
+                  :aria-hidden="false"
                   aria-label="all confirmed"
-                  class="text-success"
+                  class="text-success ml-1"
                   :icon="mdiCheckCircle"
-                  role="img"
+                  role="presentation"
                 />
                 <span v-if="department.totalConfirmed === 0 || department.totalConfirmed < department.totalEvaluations">
                   <span aria-hidden="true">{{ department.totalConfirmed }} / {{ department.totalEvaluations }}</span>
@@ -156,7 +158,7 @@ import NotificationForm from '@/components/admin/NotificationForm'
 import PageHeader from '@/components/util/PageHeader'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
 import TermSelect from '@/components/util/TermSelect'
-import {alertScreenReader, getCatalogListings, putFocusNextTick, toLocaleFromISO} from '@/lib/utils'
+import {alertScreenReader, getCatalogListings, pluralize, putFocusNextTick, toLocaleFromISO} from '@/lib/utils'
 import {computed, onMounted, ref} from 'vue'
 import {each, filter as _filter, find, get, includes, indexOf, isEmpty, kebabCase, map, size} from 'lodash'
 import {getDepartmentsEnrolled} from '@/api/departments'
@@ -289,6 +291,6 @@ const toggleSelectAll = () => {
 .error-count {
   border-width: 2px;
   font-weight: bold;
-  padding: 0 6px;
+  margin-left: 2px;
 }
 </style>

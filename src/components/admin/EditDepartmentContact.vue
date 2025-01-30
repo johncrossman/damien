@@ -104,18 +104,19 @@
           :id="`select-department-forms-${contactId}`"
           :aria-describedby="`selected-department-forms-desc-${contactId}`"
           aria-label="Department Forms"
+          auto-select-first
           autocomplete="off"
           class="mt-1"
           color="primary"
+          :custom-filter="filterDepartmentForms"
           density="compact"
           :disabled="isSaving"
           eager
-          :filter-keys="['name']"
           hide-details
           hide-selected
           item-title="name"
           item-value="id"
-          :items="departmentStore.allDepartmentForms"
+          :items="availableDepartmentForms"
           :list-props="{ariaLive: undefined}"
           :menu-props="{closeOnContentClick: true}"
           :model-value="contactDepartmentForms"
@@ -182,7 +183,7 @@
 import PersonLookup from '@/components/admin/PersonLookup'
 import ProgressButton from '@/components/util/ProgressButton'
 import {alertScreenReader, oxfordJoin, putFocusNextTick} from '@/lib/utils'
-import {cloneDeep, find, get, isEmpty, isNil, map, remove, size, sortBy} from 'lodash'
+import {cloneDeep, differenceBy, find, get, isEmpty, isNil, last, map, remove, size, some, sortBy, upperCase} from 'lodash'
 import {computed, onMounted, ref, watch} from 'vue'
 import {getUserDepartmentForms} from '@/api/user'
 import {storeToRefs} from 'pinia'
@@ -224,6 +225,9 @@ const uid = ref(undefined)
 const userId = ref(undefined)
 const valid = ref(true)
 
+const availableDepartmentForms = computed(() => {
+  return differenceBy(departmentStore.allDepartmentForms, contactDepartmentForms.value, item => item.name)
+})
 const contactId = computed(() => {
   return get(props.contact, 'uid', 'add-contact')
 })
@@ -257,8 +261,15 @@ const fetchUserDepartmentForms = uid => {
   })
 }
 
+const filterDepartmentForms = (value, queryText) => {
+  return upperCase(value).includes(upperCase(queryText))
+}
+
 const onChangeContactDepartmentForms = selectedValues => {
-  contactDepartmentForms.value = selectedValues
+  const newAddition = last(selectedValues)
+  if (get(newAddition, 'id') && some(availableDepartmentForms.value, {id: newAddition.id})) {
+    contactDepartmentForms.value = selectedValues
+  }
 }
 
 const onSave = () => {
