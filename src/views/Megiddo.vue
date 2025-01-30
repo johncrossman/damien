@@ -87,7 +87,7 @@
                         class="pr-2"
                         color="anchor"
                         :icon="mdiTrayArrowDown"
-                        role="img"
+                        role="presentation"
                         size="small"
                       />
                       {{ toLocaleFromISO(e.createdAt, dateFormat) }}
