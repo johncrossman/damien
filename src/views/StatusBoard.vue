@@ -18,6 +18,7 @@
         :loading="contextStore.loading || !contextStore.selectedTermId"
         must-sort
         :sort-by="sortBy"
+        @update:sort-by="onUpdateSortBy"
       >
         <template #top>
           <div class="align-center d-flex pl-3 py-2">
@@ -157,7 +158,7 @@ import SortableTableHeader from '@/components/util/SortableTableHeader'
 import TermSelect from '@/components/util/TermSelect'
 import {alertScreenReader, getCatalogListings, putFocusNextTick, toLocaleFromISO} from '@/lib/utils'
 import {computed, onMounted, ref} from 'vue'
-import {each, filter as _filter, get, includes, indexOf, isEmpty, kebabCase, map, size} from 'lodash'
+import {each, filter as _filter, find, get, includes, indexOf, isEmpty, kebabCase, map, size} from 'lodash'
 import {getDepartmentsEnrolled} from '@/api/departments'
 import {mdiCheckCircle} from '@mdi/js'
 import {useContextStore} from '@/stores/context'
@@ -167,7 +168,7 @@ const contextStore = useContextStore()
 const blockers = ref({})
 const departments = ref([])
 const departmentHeaders = [
-  {key: 'select', class: 'text-start px-4', headerProps: {width: '30px'}, sortable: true, title: 'Select', value: 'select'},
+  {key: 'select', ariaLabel: 'Selected', class: 'text-start px-4', headerProps: {width: '30px'}, sortable: true, title: 'Select', value: 'select'},
   {key: 'deptName', class: 'px-2', headerProps: {width: '50%'}, sortable: true, title: 'Department', value: 'deptName'},
   {key: 'lastUpdated', class: 'px-2', headerProps: {width: '20%'}, sortable: true, title: 'Last Updated', value: 'lastUpdated'},
   {key: 'totalInError', class: 'px-2', headerProps: {width: '10%'}, sortable: true, title: 'Errors', value: 'totalInError'},
@@ -242,6 +243,16 @@ const loadBlockers = () => {
     })
     resolve()
   })
+}
+
+const onUpdateSortBy = primarySortBy => {
+  const key = primarySortBy[0].key
+  const header = find(departmentHeaders, {key: key})
+  const order = primarySortBy[0].order
+  sortBy.value = primarySortBy
+  if (header) {
+    alertScreenReader(`Sorted by ${header.ariaLabel || header.title}, ${order}ending`)
+  }
 }
 
 const toggleSelect = department => {
