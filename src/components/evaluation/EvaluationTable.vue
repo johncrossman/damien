@@ -514,12 +514,12 @@
                 <div class="d-flex justify-end">
                   <ConfirmDialog
                     v-if="markAsDoneWarning"
-                    hide-confirm="true"
-                    :disabled="disableControls"
+                    :hide-confirm="true"
                     :html="markAsDoneWarning.message"
                     :icon="mdiAlertCircle"
                     :on-click-cancel="() => markAsDoneWarning = undefined"
                     :on-click-confirm="noop"
+                    text=""
                     title="Warning"
                   />
                   <ProgressButton
@@ -989,7 +989,7 @@ const validateAndSave = evaluation => {
   }
   let warning
   if (status === 'confirmed') {
-    // If evaluation start-date is in the past then put up a warning dialog.
+    // If evaluation end date is in the past then put up a warning dialog.
     const proposedUpdate = {...evaluation, ...fields}
     warning = validateMarkAsDone([proposedUpdate])
   }
