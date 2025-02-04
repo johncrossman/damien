@@ -1,5 +1,5 @@
 import {DateTime} from 'luxon'
-import {filter, get, includes, intersectionWith, some} from 'lodash'
+import {each, filter, get, includes, intersectionWith, some} from 'lodash'
 import {useDepartmentStore} from './department-edit-session'
 
 
@@ -37,11 +37,11 @@ export function validateDuplicable(evaluationIds: number[], fields: any) {
 
 export function validateMarkAsDone(selectedEvaluations: any[]): string | undefined {
   let warningMessage: string | undefined = undefined
-  const evaluationsEnded = this.$_.filter(selectedEvaluations, e => DateTime.now() > DateTime.fromJSDate(e.endDate))
+  const evaluationsEnded = filter(selectedEvaluations, e => DateTime.now() > DateTime.fromJSDate(e.endDate))
   if (evaluationsEnded.length) {
     warningMessage = `You're requesting evaluations with an evaluation period that has already ended, which will result in
       those evaluations <strong>NOT being sent to students</strong>. Please set a new start date for the evaluations listed below:<br>`
-    this.$_.each(evaluationsEnded, e => {
+    each(evaluationsEnded, e => {
       warningMessage += `<br>${e.subjectArea} ${e.catalogId} ${e.instructionFormat} ${e.sectionNumber}`
     })
   }
