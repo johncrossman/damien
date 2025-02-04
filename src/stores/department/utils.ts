@@ -37,7 +37,15 @@ export function validateDuplicable(evaluationIds: number[], fields: any) {
 
 export function validateMarkAsDone(selectedEvaluations: any[]): string | undefined {
   let warningMessage: string | undefined = undefined
-  const evaluationsEnded = filter(selectedEvaluations, e => DateTime.now() > DateTime.fromJSDate(e.endDate))
+  const evaluationsEnded = []
+  each(selectedEvaluations, e => {
+    const startDate = DateTime.isDateTime(e.startDate) ? e.startDate : DateTime.fromISO(e.startDate)
+    const evalStateOffset = startDate.diff(DateTime.fromJSDate(e.meetingDates.start), ['days'])
+    const endDate = (evalStateOffset < 70) ? startDate.plus({days: 13}) : startDate.plus({days: 20})
+    if (endDate.diffNow() < 0) {
+      evaluationsEnded.push(e)
+    }
+  })
   if (evaluationsEnded.length) {
     warningMessage = `You're requesting evaluations with an evaluation period that has already ended, which will result in
       those evaluations <strong>NOT being sent to students</strong>. Please set a new start date for the evaluations listed below:<br>`
