@@ -50,7 +50,9 @@ dept_2_role = UserDeptRole(dept_2.dept_id, receives_comms=False)
 dept_2_user = utils.get_test_user(dept_2_role)
 
 test_email = Email(subject=None, body=None)
+utils.hard_delete_user(dept_1_user)
 utils.delete_department_membership(dept_1, dept_1_user)
+utils.delete_department_membership(dept_2, dept_2_user)
 utils.delete_dept_note(term, dept_1)
 dept_1.users = utils.get_dept_users(dept_1)
 
@@ -117,14 +119,14 @@ class TestDeptMgmt:
         self.dept_details_admin_page.click_add_contact()
         self.dept_details_admin_page.look_up_contact_uid(dept_1_user.uid)
         self.dept_details_admin_page.click_look_up_result(dept_1_user)
-        assert self.dept_details_admin_page.value(DeptDetailsAdminPage.ADD_CONTACT_EMAIL) == dept_1_user.email
+        assert dept_1_user.first_name in self.dept_details_admin_page.element(DeptDetailsAdminPage.ADD_CONTACT_NAME).text
 
     def test_add_contact_name_lookup(self):
         self.dept_details_admin_page.click_cancel_contact()
         self.dept_details_admin_page.click_add_contact()
         self.dept_details_admin_page.look_up_contact_name(dept_1_user.first_name)
         self.dept_details_admin_page.click_look_up_result(dept_1_user)
-        assert self.dept_details_admin_page.value(DeptDetailsAdminPage.ADD_CONTACT_EMAIL) == dept_1_user.email
+        assert dept_1_user.first_name in self.dept_details_admin_page.element(DeptDetailsAdminPage.ADD_CONTACT_NAME).text
 
     def test_add_contact_bad_email(self):
         self.dept_details_admin_page.click_cancel_contact()
@@ -194,7 +196,10 @@ class TestDeptMgmt:
 
     def test_edit_contact_verify(self):
         self.dept_details_admin_page.expand_dept_contact(dept_1_user)
-        expected_comms = 'Does receive notifications' if dept_1_user.dept_roles[0].receives_comms else 'Does not receive notifications'
+        if dept_1_user.dept_roles[0].receives_comms:
+            expected_comms = 'Does receive notifications'
+        else:
+            expected_comms = 'Does not receive notifications'
         assert self.dept_details_admin_page.dept_contact_comms_perms(dept_1_user) == expected_comms
         expected_blue = dept_1_user.blue_permissions.value['description']
         assert self.dept_details_admin_page.dept_contact_blue_perms(dept_1_user) == expected_blue
@@ -257,9 +262,13 @@ class TestDeptMgmt:
         assert visible == expected
 
     def test_notif_remove_all(self):
+        count = len(test_email.recipients)
         for u in test_email.recipients:
-            self.dept_details_admin_page.notif_remove_recipient(dept_1, u)
-        assert not self.dept_details_admin_page.element(DamienPages.NOTIF_SEND_BUTTON).is_enabled()
+            if test_email.recipients.index(u) == count - 1:
+                assert not self.dept_details_admin_page.is_present(
+                    self.dept_details_admin_page.notif_dept_recipient_remove_btn(dept_1, u))
+            else:
+                self.dept_details_admin_page.notif_remove_recipient(dept_1, u)
 
     def test_notif_send_to_all(self):
         test_email.subject = f'Test subject to all contacts {self.test_id}'

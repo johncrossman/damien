@@ -217,8 +217,9 @@ class CourseDashboardEditsPage(CourseDashboards):
     BULK_EDIT_STATUS_SELECT = (By.ID, 'update-evaluations-select-status')
     BULK_EDIT_FORM_SELECT = (By.ID, 'update-evaluations-select-form')
     BULK_EDIT_TYPE_SELECT = (By.ID, 'update-evaluations-select-type')
-    BULK_EDIT_DATE_INPUT = (By.ID, 'update-evaluations-start-date')
-    BULK_EDIT_APPLY_BUTTON = (By.ID, 'apply-course-action-btn')
+    BULK_EDIT_DATE_INPUT = (By.ID, 'update-evaluations-start-date-input')
+    BULK_EDIT_APPLY_BUTTON = (By.ID, 'update-evaluations-apply-course-action-btn')
+    BULK_EDIT_CANCEL_BUTTON = (By.ID, 'update-evaluations-cancel-duplicate-btn')
 
     def click_bulk_edit(self):
         self.wait_for_element_and_click(CourseDashboardEditsPage.EDIT_BUTTON)
@@ -260,7 +261,7 @@ class CourseDashboardEditsPage(CourseDashboards):
         time.sleep(2)
 
     def click_bulk_edit_cancel(self):
-        self.wait_for_element_and_click(CourseDashboardEditsPage.DUPE_CXL_BUTTON)
+        self.wait_for_element_and_click(CourseDashboardEditsPage.BULK_EDIT_CANCEL_BUTTON)
         time.sleep(1)
 
     # PREVIEW CHANGES
@@ -406,7 +407,7 @@ class CourseDashboardEditsPage(CourseDashboards):
     EVAL_CHANGE_DEPT_FORM_NO_OPTION = (By.XPATH, '//li[contains(text(), "Sorry, no matching options.")]')
     EVAL_CHANGE_EVAL_TYPE_SELECT = (By.ID, 'select-evaluation-type')
     EVAL_CHANGE_START_DATE_INPUT = (By.ID, 'evaluation-start-date-input')
-    EVAL_CHANGE_START_REQ_MSG = (By.XPATH, '//span[contains(text(), "Required")]')
+    EVAL_CHANGE_START_REQ_MSG = (By.XPATH, '//div[contains(text(), "Required")]')
     EVAL_CHANGE_SAVE_BUTTON = (By.ID, 'save-evaluation-edit-btn')
     EVAL_CHANGE_CANCEL_BUTTON = (By.ID, 'cancel-evaluation-edit-btn')
     EVAL_CHANGE_PROCEED_BUTTON = (By.ID, 'confirm-dialog-btn')
@@ -521,7 +522,7 @@ class CourseDashboardEditsPage(CourseDashboards):
             eval_period_in_progress = evaluation.eval_start_date <= today and evaluation.eval_end_date >= today
             if eval_period_in_progress:
                 self.proceed_eval_changes()
-        self.when_not_present(self.EVAL_CHANGE_SAVE_BUTTON, utils.get_short_timeout())
+        self.when_not_present(self.EVAL_CHANGE_SAVE_BUTTON, utils.get_medium_timeout())
 
     def proceed_eval_changes(self):
         self.wait_for_element_and_click(self.EVAL_CHANGE_PROCEED_BUTTON)
@@ -539,3 +540,7 @@ class CourseDashboardEditsPage(CourseDashboards):
         Wait(self.driver, utils.get_short_timeout()).until(
             ec.presence_of_element_located((By.XPATH, f'//div[contains(text(), "{msg}")]')),
         )
+
+    def wait_for_eval_period_error_and_cancel(self):
+        self.wait_for_validation_error('evaluation period that has already ended')
+        self.wait_for_element_and_click(self.DELETE_CANCEL_BUTTON)

@@ -58,9 +58,10 @@ class CourseDashboards(DamienPages):
     def section_row(evaluation):
         return By.XPATH, f'//tr[contains(., "{evaluation.ccn}")]'
 
-    def wait_for_eval_row(self, evaluation, dept=None):
+    def wait_for_eval_row(self, evaluation, dept=None, form=None, eval_type=None):
         time.sleep(1)
-        self.wait_for_element((By.XPATH, self.eval_row_xpath(evaluation, dept)), utils.get_medium_timeout())
+        self.wait_for_element((By.XPATH, self.eval_row_xpath(evaluation, dept, form, eval_type)),
+                              utils.get_medium_timeout())
 
     def visible_evaluation_rows(self):
         return [el.text for el in self.elements(CourseDashboards.EVALUATION_ROW)]

@@ -50,6 +50,7 @@ class DeptDetailsAdminPage(CourseDashboardEditsPage):
     # Add contact
 
     ADD_CONTACT_BUTTON = (By.ID, 'add-dept-contact-btn')
+    ADD_CONTACT_NAME = (By.ID, 'contact-sub-header')
     ADD_CONTACT_EMAIL = (By.ID, 'input-email-add-contact')
     EMAIL_REQUIRED_MSG = (By.XPATH, '//div[text()="E-mail is required"]')
     EMAIL_INVALID_MSG = (By.XPATH, '//div[text()="E-mail must be valid"]')
@@ -143,8 +144,8 @@ class DeptDetailsAdminPage(CourseDashboardEditsPage):
         self.hit_escape()
         self.click_save_new_contact()
         time.sleep(2)
-        self.wait_for_contact(user)
         user.user_id = utils.get_user_id(user)
+        self.wait_for_contact(user)
         dept.users.append(user)
 
     # Edit contact

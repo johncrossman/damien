@@ -42,7 +42,7 @@ class TestEvaluationManagement:
     depts = utils.get_participating_depts()
     depts = list(filter(lambda d: d.row_count >= 10, depts))
 
-    dept_1 = evaluation_utils.get_dept_eval_with_foreign_x_listings(term, depts)[0]
+    dept_1 = evaluation_utils.get_dept_eval_with_foreign_x_listings(term, depts, max_row_count=400, mid_terms=True)[0]
     dept_1.evaluations = evaluation_utils.get_evaluations(term, dept_1, log=True)
     dept_2 = utils.get_test_dept_2(all_contacts)
     dept_2.evaluations = evaluation_utils.get_evaluations(term, dept_2, log=True)
@@ -90,17 +90,17 @@ class TestEvaluationManagement:
         self.dept_details_admin_page.wait_for_eval_rows()
         self.dept_details_admin_page.click_edit_evaluation(self.dept_1.evaluations[0])
         self.dept_details_admin_page.change_dept_form(self.dept_1.evaluations[0], form)
-        self.dept_details_admin_page.click_save_eval_changes(self.dept_1.evaluations[0])
+        self.dept_details_admin_page.save_eval_changes(self.dept_1.evaluations[0])
         self.dept_1.evaluations[0].dept_form = form
-        self.dept_details_admin_page.wait_for_eval_rows()
+        self.dept_details_admin_page.wait_for_eval_row(self.dept_1.evaluations[0])
         assert form in self.dept_details_admin_page.eval_dept_form(self.dept_1.evaluations[0])
 
     def test_revert_dept_form(self):
         self.dept_details_admin_page.click_edit_evaluation(self.dept_1.evaluations[0])
         self.dept_details_admin_page.change_dept_form(self.dept_1.evaluations[0])
-        self.dept_details_admin_page.click_save_eval_changes(self.dept_1.evaluations[0])
+        self.dept_details_admin_page.save_eval_changes(self.dept_1.evaluations[0])
         self.dept_1.evaluations[0].dept_form = self.eval_form_test
-        self.dept_details_admin_page.wait_for_eval_rows()
+        self.dept_details_admin_page.wait_for_eval_row(self.dept_1.evaluations[0])
         if not self.eval_form_test:
             assert not self.dept_details_admin_page.eval_dept_form(self.dept_1.evaluations[0])
         else:
@@ -110,9 +110,9 @@ class TestEvaluationManagement:
         form = next(filter(lambda f: '_MID' not in f, self.dept_forms))
         self.dept_details_admin_page.click_edit_evaluation(self.dept_1.evaluations[0])
         self.dept_details_admin_page.change_dept_form(self.dept_1.evaluations[0], form)
-        self.dept_details_admin_page.click_save_eval_changes(self.dept_1.evaluations[0])
+        self.dept_details_admin_page.save_eval_changes(self.dept_1.evaluations[0])
         self.dept_1.evaluations[0].dept_form = form
-        self.dept_details_admin_page.wait_for_eval_rows()
+        self.dept_details_admin_page.wait_for_eval_row(self.dept_1.evaluations[0])
         assert form in self.dept_details_admin_page.eval_dept_form(self.dept_1.evaluations[0])
 
     # EVAL TYPE
@@ -133,18 +133,18 @@ class TestEvaluationManagement:
         self.dept_details_admin_page.click_cancel_eval_changes()
         self.dept_details_admin_page.click_edit_evaluation(self.dept_1.evaluations[2])
         self.dept_details_admin_page.change_eval_type(self.dept_1.evaluations[2], eval_type)
-        self.dept_details_admin_page.click_save_eval_changes(self.dept_1.evaluations[2])
+        self.dept_details_admin_page.save_eval_changes(self.dept_1.evaluations[2])
         self.dept_1.evaluations[2].eval_type = eval_type
-        self.dept_details_admin_page.wait_for_eval_rows()
+        self.dept_details_admin_page.wait_for_eval_row(self.dept_1.evaluations[2])
         assert eval_type in self.dept_details_admin_page.eval_type(self.dept_1.evaluations[2])
 
     def test_change_eval_type(self):
         eval_type = next(filter(lambda t: t != self.dept_1.evaluations[2].eval_type and t != 'Revert', self.eval_types))
         self.dept_details_admin_page.click_edit_evaluation(self.dept_1.evaluations[2])
         self.dept_details_admin_page.change_eval_type(self.dept_1.evaluations[2], eval_type)
-        self.dept_details_admin_page.click_save_eval_changes(self.dept_1.evaluations[2])
+        self.dept_details_admin_page.save_eval_changes(self.dept_1.evaluations[2])
         self.dept_1.evaluations[2].eval_type = eval_type
-        self.dept_details_admin_page.wait_for_eval_rows()
+        self.dept_details_admin_page.wait_for_eval_row(self.dept_1.evaluations[2])
         assert eval_type in self.dept_details_admin_page.eval_type(self.dept_1.evaluations[2])
 
     # EVAL DATES
@@ -155,8 +155,7 @@ class TestEvaluationManagement:
         e.eval_end_date = evaluation_utils.row_eval_end_from_eval_start(e.course_start_date, e.eval_start_date, e.course_end_date)
         self.dept_details_admin_page.click_edit_evaluation(e)
         self.dept_details_admin_page.change_eval_start_date(e, e.eval_start_date)
-        self.dept_details_admin_page.click_save_eval_changes(e)
-        self.dept_details_admin_page.wait_for_eval_rows()
+        self.dept_details_admin_page.save_eval_changes(e)
         self.dept_details_admin_page.wait_for_eval_row(e)
         expected = f"{e.eval_start_date.strftime('%m/%d/%Y')} - {e.eval_end_date.strftime('%m/%d/%Y')}"
         assert expected in self.dept_details_admin_page.eval_period_dates(e)
@@ -217,13 +216,14 @@ class TestEvaluationManagement:
         self.dept_details_admin_page.load_dept_page(self.dept_1)
         self.dept_details_admin_page.click_edit_evaluation(ev)
         self.dept_details_admin_page.change_dept_form(ev, form)
-        self.dept_details_admin_page.click_save_eval_changes(ev)
-        self.dept_details_admin_page.wait_for_eval_rows()
+        self.dept_details_admin_page.save_eval_changes(ev)
         ev.dept_form = form
+        self.dept_details_admin_page.wait_for_eval_row(ev)
         self.dept_details_admin_page.click_eval_checkbox(ev)
         dupe = self.dept_details_admin_page.duplicate_section(ev, self.dept_1.evaluations,
                                                               midterm=True, start_date=date)
-        self.dept_details_admin_page.wait_for_eval_rows()
+        self.dept_details_admin_page.wait_for_eval_row(ev)
+        self.dept_details_admin_page.wait_for_eval_row(dupe)
         assert len(self.dept_details_admin_page.rows_of_evaluation(ev)) == 1
         assert len(self.dept_details_admin_page.rows_of_evaluation(dupe)) == 1
 
@@ -249,7 +249,6 @@ class TestEvaluationManagement:
         self.dept_details_admin_page.click_add_section()
         self.dept_details_admin_page.look_up_section(e.ccn)
         self.dept_details_admin_page.click_confirm_add_section()
-        self.dept_details_admin_page.wait_for_eval_rows()
         self.dept_details_admin_page.wait_for_eval_row(e, dept=self.dept_1)
         self.dept_1.evaluations.append(e)
 
@@ -322,22 +321,24 @@ class TestEvaluationManagement:
         visible.sort(key=lambda d: (d['ccn'], d['uid']))
         assert visible == expected
 
-    def test_bulk_edit_status_validation(self):
-        self.dept_details_dept_page.select_bulk_status(EvaluationStatus.CONFIRMED)
-        self.dept_details_dept_page.click_bulk_edit_save()
-        started = list(filter(lambda ev: ev.eval_start_date <= datetime.date.today(), self.bulk_dept.evaluations))
-        if started:
-            self.dept_details_admin_page.proceed_eval_changes()
-        self.dept_details_dept_page.await_error_and_accept()
-        assert self.dept_details_dept_page.edit_button_is_enabled()
+    def test_bulk_edit_eval_period_validation(self):
+        if self.term.start_date + timedelta(days=14) < datetime.date.today():
+            self.dept_details_dept_page.select_bulk_status(EvaluationStatus.CONFIRMED)
+            self.dept_details_dept_page.select_bulk_dept_form('HISTORY')
+            self.dept_details_dept_page.select_bulk_eval_type('G')
+            self.dept_details_dept_page.enter_bulk_start_date(datetime.date.today() - timedelta(days=14))
+            self.dept_details_dept_page.click_bulk_edit_save()
+            self.dept_details_admin_page.wait_for_eval_period_error_and_cancel()
 
     def test_bulk_edit_status(self):
         new_status = EvaluationStatus.FOR_REVIEW
-        self.dept_details_dept_page.click_bulk_edit_cancel()
+        if self.dept_details_dept_page.is_present(self.dept_details_dept_page.BULK_EDIT_CANCEL_BUTTON):
+            self.dept_details_dept_page.click_bulk_edit_cancel()
         self.dept_details_dept_page.click_bulk_edit()
         self.dept_details_dept_page.select_bulk_status(new_status)
         self.dept_details_dept_page.click_bulk_edit_save()
         self.dept_details_dept_page.wait_for_bulk_update()
+        self.dept_details_dept_page.wait_for_eval_row(self.bulk_dept.evaluations[0])
         assert list(set(self.dept_details_dept_page.visible_evaluation_statuses())) == [new_status.value['ui']]
         for ev in self.bulk_dept.evaluations:
             ev.status = new_status
@@ -348,10 +349,11 @@ class TestEvaluationManagement:
         self.dept_details_dept_page.click_bulk_edit()
         self.dept_details_dept_page.select_bulk_dept_form(new_form)
         self.dept_details_dept_page.click_bulk_edit_save()
-        self.dept_details_dept_page.wait_for_bulk_update()
-        assert list(set(self.dept_details_dept_page.visible_evaluation_dept_forms())) == [new_form]
         for ev in self.bulk_dept.evaluations:
             ev.dept_form = new_form
+        self.dept_details_dept_page.wait_for_bulk_update()
+        self.dept_details_dept_page.wait_for_eval_row(self.bulk_dept.evaluations[0])
+        assert list(set(self.dept_details_dept_page.visible_evaluation_dept_forms())) == [new_form]
 
     def test_bulk_edit_eval_type(self):
         new_type = 'G'
@@ -359,10 +361,11 @@ class TestEvaluationManagement:
         self.dept_details_dept_page.click_bulk_edit()
         self.dept_details_dept_page.select_bulk_eval_type(new_type)
         self.dept_details_dept_page.click_bulk_edit_save()
-        self.dept_details_dept_page.wait_for_bulk_update()
-        assert list(set(self.dept_details_dept_page.visible_evaluation_types())) == [new_type]
         for ev in self.bulk_dept.evaluations:
             ev.eval_type = new_type
+        self.dept_details_dept_page.wait_for_bulk_update()
+        self.dept_details_dept_page.wait_for_eval_row(self.bulk_dept.evaluations[0])
+        assert list(set(self.dept_details_dept_page.visible_evaluation_types())) == [new_type]
 
     def test_bulk_edit_start_date(self):
         new_date = self.bulk_dept.evaluations[0].eval_start_date - timedelta(days=1)
@@ -373,13 +376,15 @@ class TestEvaluationManagement:
         self.dept_details_dept_page.click_bulk_edit()
         self.dept_details_dept_page.enter_bulk_start_date(new_date)
         self.dept_details_dept_page.click_bulk_edit_save()
+        for ev in evaluations:
+            ev.eval_start_date = new_date
         self.dept_details_dept_page.wait_for_bulk_update()
+        self.dept_details_dept_page.filter_rows('')
+        self.dept_details_dept_page.wait_for_eval_row(evaluations[0])
         new_date_str = datetime.datetime.strftime(new_date, '%m/%d/%Y')
         self.dept_details_dept_page.filter_rows(new_date_str)
         assert len(self.dept_details_dept_page.visible_evaluation_rows()) == len(evaluations)
         assert list(set(self.dept_details_dept_page.visible_evaluation_starts())) == [new_date_str]
-        for ev in evaluations:
-            ev.eval_start_date = new_date
 
     def test_bulk_edit_all_fields(self):
         new_status = EvaluationStatus.IGNORED
@@ -413,6 +418,7 @@ class TestEvaluationManagement:
 
         self.dept_details_dept_page.click_bulk_edit_save()
         self.dept_details_dept_page.wait_for_bulk_update()
+        self.dept_details_dept_page.wait_for_eval_row(evaluations[0])
 
         new_date_str = datetime.datetime.strftime(new_date, '%m/%d/%Y')
         self.dept_details_dept_page.filter_rows(new_date_str)
@@ -423,6 +429,7 @@ class TestEvaluationManagement:
         assert list(set(self.dept_details_dept_page.visible_evaluation_starts())) == [new_date_str]
 
     def test_bulk_edit_instructor(self):
+        self.dept_details_dept_page.hit_escape()
         evals = evaluation_utils.get_evaluations(self.term, self.bulk_dept, log=True)
         no_teach = list(filter(lambda ev: (ev.instructor.uid is None), evals))
         new_teach = utils.get_test_user()
@@ -441,3 +448,4 @@ class TestEvaluationManagement:
             for row in no_teach:
                 row.instructor = new_teach
                 assert new_teach.uid in self.dept_details_dept_page.eval_instructor(row)
+            self.dept_details_dept_page.wait_for_eval_row(evals[0])

@@ -78,6 +78,8 @@ def merge_dupe_rows(evaluations):
     for group in grouped:
         group.sort(key=lambda e: e.course_end_date)
         if len(group) > 1:
+            earliest_start_date = group[0].course_start_date
+            group[-1].course_start_date = earliest_start_date
             group.pop()
             group.reverse()
             for i in group:
@@ -782,37 +784,41 @@ def get_dept_with_listings_or_shares(term, depts):
                         return dept
 
 
-def get_dept_eval_with_foreign_room_shares(term, depts):
+def get_dept_eval_with_foreign_room_shares(term, depts, max_row_count=None):
     # Exclude depts with many room shares that appear on no other dept pages
     dept_ids = [d.dept_id for d in depts]
     test_depts = [d for d in depts if d.users and d.dept_id not in [37, 52, 95]]
     app.logger.info('Looking for foreign room shares')
     for dept in test_depts:
-        app.logger.info(f'Checking if {dept.name} has foreign room shares and can be used for tests')
-        dept.evaluations = get_evaluations(term, dept)
-        for ev in dept.evaluations:
-            if ev.room_share_ccns and not ev.x_listing_ccns:
-                share = ev.room_share_ccns[-1]
-                share_dept = get_section_dept(term, share)
-                if share_dept.dept_id in dept_ids and share_dept.users and share_dept.dept_id != dept.dept_id:
-                    app.logger.info(f'{dept.name} is a winner!')
-                    return dept, ev
+        if (max_row_count and dept.row_count <= max_row_count) or not max_row_count:
+            app.logger.info(f'Checking if {dept.name} has foreign room shares and can be used for tests')
+            dept.evaluations = get_evaluations(term, dept)
+            for ev in dept.evaluations:
+                if ev.room_share_ccns and not ev.x_listing_ccns:
+                    share = ev.room_share_ccns[-1]
+                    share_dept = get_section_dept(term, share)
+                    if share_dept.dept_id in dept_ids and share_dept.users and share_dept.dept_id != dept.dept_id:
+                        app.logger.info(f'{dept.name} is a winner!')
+                        return dept, ev
 
 
-def get_dept_eval_with_foreign_x_listings(term, depts, max_row_count=None):
+def get_dept_eval_with_foreign_x_listings(term, depts, max_row_count=None, mid_terms=False):
     # Exclude depts with many x-listings that appear on no other dept pages
     dept_ids = [d.dept_id for d in depts]
     test_depts = [d for d in depts if d.users and d.dept_id not in [37, 52, 95]]
     app.logger.info('Looking for foreign x-listings')
     for dept in test_depts:
         app.logger.info(f'Checking if {dept.name} has foreign cross-listings and can be used for tests')
-        if utils.is_dept_midterm_friendly(dept):
+        if (mid_terms and utils.is_dept_midterm_friendly(dept)) or not mid_terms:
             if (max_row_count and dept.row_count <= max_row_count) or not max_row_count:
+                app.logger.info('Satisfies row count max')
                 dept.evaluations = get_evaluations(term, dept)
                 rows_with_instr = list(filter(lambda e: e.instructor.uid, dept.evaluations))
                 if len(rows_with_instr) > 0:
+                    app.logger.info('It has rows with instructors')
                     for ev in dept.evaluations:
                         if ev.x_listing_ccns and not ev.room_share_ccns:
+                            app.logger.info('Has x-listings and not shares')
                             listing = ev.x_listing_ccns[-1]
                             listing_dept = get_section_dept(term, listing)
                             if listing_dept.dept_id in dept_ids and listing_dept.users and listing_dept.dept_id != dept.dept_id:

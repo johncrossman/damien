@@ -191,9 +191,10 @@ class Page(object):
             self.hit_backspace()
 
     def enter_chars(self, locator, string):
+        time.sleep(0.5)
         for i in string:
-            time.sleep(0.5)
             self.element(locator).send_keys(i)
+        time.sleep(0.5)
 
     def remove_and_send_chars(self, locator, string):
         self.remove_chars(locator)
