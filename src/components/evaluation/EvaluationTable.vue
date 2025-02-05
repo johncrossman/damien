@@ -151,10 +151,10 @@
                 'bg-secondary text-white border-bottom-none': evaluation.id === editRowId,
                 'bg-evaluation-to-do': evaluation.id !== editRowId && evaluation.status === 'review',
                 'bg-evaluation-xlisting': evaluation.id !== editRowId && !evaluation.status && (evaluation.crossListedWith || evaluation.roomSharedWith),
-                'bg-primary-contrast text-primary': [focusedEditButtonEvaluationId, hoverId].includes(evaluation.id) && !isEditing(evaluation)
+                'bg-primary-contrast text-primary': isRowActive(evaluation) && !isEditing(evaluation)
               }"
-              @mouseenter="() => hoverId = evaluation.id"
-              @mouseleave="() => hoverId = null"
+              @mouseenter="onMouseenterRow(evaluation)"
+              @mouseleave="onMouseleaveRow(evaluation)"
             >
               <td v-if="readonly" :id="`evaluation-${rowIndex}-department`" class="align-middle py-1 pl-2">
                 <router-link :to="`/department/${get(evaluation.department, 'id')}`" class="font-weight-bold">
@@ -171,7 +171,7 @@
                   :id="`evaluation-${rowIndex}-checkbox`"
                   :aria-label="`${evaluation.subjectArea} ${evaluation.catalogId} ${selectedEvaluationIds.includes(evaluation.id) ? '' : 'not '}selected`"
                   class="d-flex justify-center"
-                  :color="`${[focusedEditButtonEvaluationId, hoverId].includes(evaluation.id) ? 'primary' : 'tertiary'}`"
+                  :color="`${isRowActive(evaluation) ? 'primary' : 'tertiary'}`"
                   :disabled="editRowId === evaluation.id || disableControls"
                   hide-details
                   :model-value="evaluation.isSelected"
@@ -184,7 +184,7 @@
                 class="pl-1 pr-3"
                 :class="{
                   'align-middle': !isEditing(evaluation),
-                  'pr-1': [focusedEditButtonEvaluationId, hoverId].includes(evaluation.id)
+                  'pr-1': isRowActive(evaluation)
                 }"
                 :colspan="allowEdits && isEditing(evaluation) ? 2 : 1"
               >
@@ -207,8 +207,8 @@
                 >
                   <v-menu
                     scroll-strategy="none"
-                    z-index="10"
-                    @update:model-value="isOpen => openMenuEvaluationId = (isOpen ? evaluation.id : null)"
+                    z-index="0"
+                    @update:model-value="isOpen => onToggleEditMenu(isOpen, evaluation)"
                   >
                     <template #activator="{props: menuProps}">
                       <v-btn
@@ -216,7 +216,7 @@
                         :append-icon="mdiChevronDown"
                         class="mx-auto px-1 text-uppercase evaluation-row-btn"
                         :class="{
-                          'sr-only': ![focusedEditButtonEvaluationId, hoverId].includes(evaluation.id),
+                          'sr-only': !isRowActive(evaluation),
                           'focus-btn': evaluation.id === focusedEditButtonEvaluationId
                         }"
                         color="primary"
@@ -227,11 +227,12 @@
                         variant="text"
                         width="100%"
                         v-bind="menuProps"
-                        @blur="() => openMenuEvaluationId === evaluation.id ? noop : focusedEditButtonEvaluationId = null"
+                        @blur="() => focusedEditButtonEvaluationId = null"
                         @focus="() => focusedEditButtonEvaluationId = evaluation.id"
                       />
                     </template>
                     <v-list
+                      :id="`evaluation-menu-list-${evaluation.id}`"
                       bg-color="surface-bright"
                       class="border-sm py-0"
                       rounded="sm"
@@ -347,7 +348,7 @@
                 <EvaluationError
                   v-if="!evaluation.instructor && !isEditing(evaluation) && (evaluation.status === 'review' || evaluation.status === 'confirmed')"
                   :id="`error-msg-evaluation-instructor-${rowIndex}`"
-                  :hover="[focusedEditButtonEvaluationId, hoverId].includes(evaluation.id)"
+                  :hover="isRowActive(evaluation)"
                   message="Instructor required"
                 />
                 <div v-if="!evaluation.instructor && isEditing(evaluation) && allowEdits" class="position-relative">
@@ -384,14 +385,14 @@
                     v-for="(conflict, index) in evaluation.conflicts.departmentForm"
                     :id="`error-msg-evaluation-department-form-conflict-${rowIndex}-${index}`"
                     :key="index"
-                    :hover="[focusedEditButtonEvaluationId, hoverId].includes(evaluation.id)"
+                    :hover="isRowActive(evaluation)"
                     :message="`Conflicts with value ${conflict.value} from ${conflict.department} department`"
                   />
                 </div>
                 <EvaluationError
                   v-if="!evaluation.departmentForm && !isEditing(evaluation) && (evaluation.status === 'review' || evaluation.status === 'confirmed')"
                   :id="`error-msg-evaluation-department-form-${rowIndex}`"
-                  :hover="[focusedEditButtonEvaluationId, hoverId].includes(evaluation.id)"
+                  :hover="isRowActive(evaluation)"
                   message="Department form required"
                 />
                 <div v-if="allowEdits && isEditing(evaluation)">
@@ -422,14 +423,14 @@
                     v-for="(conflict, index) in evaluation.conflicts.evaluationType"
                     :id="`error-msg-evaluation-type-conflict-${rowIndex}-${index}`"
                     :key="index"
-                    :hover="[focusedEditButtonEvaluationId, hoverId].includes(evaluation.id)"
+                    :hover="isRowActive(evaluation)"
                     :message="`Conflicts with value ${conflict.value} from ${conflict.department} department`"
                   />
                 </div>
                 <EvaluationError
                   v-if="!evaluation.evaluationType && !isEditing(evaluation) && (evaluation.status === 'review' || evaluation.status === 'confirmed')"
                   :id="`error-msg-evaluation-type-${rowIndex}`"
-                  :hover="[focusedEditButtonEvaluationId, hoverId].includes(evaluation.id)"
+                  :hover="isRowActive(evaluation)"
                   message="Evaluation type required"
                 />
                 <div v-if="allowEdits && isEditing(evaluation)">
@@ -478,7 +479,7 @@
                     v-for="(conflict, index) in evaluation.conflicts.evaluationPeriod"
                     :id="`error-msg-evaluation-period-conflict-${index}`"
                     :key="index"
-                    :hover="[focusedEditButtonEvaluationId, hoverId].includes(evaluation.id)"
+                    :hover="isRowActive(evaluation)"
                     :message="`Conflicts with period starting
                     ${toLocaleFromISO(conflict.value, 'LL/dd/yyyy')}
                     from ${conflict.department} department`"
@@ -628,8 +629,8 @@ import ProgressButton from '@/components/util/ProgressButton.vue'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
 import {addInstructor} from '@/api/instructor'
 import {alertScreenReader, oxfordJoin, pluralize, putFocusNextTick, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
-import {clone, each, filter, find, get, includes, isEmpty, keys, map, noop, pickBy, size, some} from 'lodash'
-import {computed, onMounted, provide, ref, watch} from 'vue'
+import {clone, each, filter, find, get, includes, isEmpty, keys, map, noop, pickBy, pull, size, some} from 'lodash'
+import {computed, nextTick, onMounted, provide, ref, watch} from 'vue'
 import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {mdiAlertCircle, mdiCheckCircle, mdiChevronDown, mdiPlusCircle} from '@mdi/js'
 import {storeToRefs} from 'pinia'
@@ -663,7 +664,7 @@ const isConfirmingCancelEdit = ref(false)
 const isConfirmingNonSisInstructor = ref(false)
 const isSaving = ref(false)
 const markAsDoneWarning = ref(undefined)
-const openMenuEvaluationId = ref(undefined)
+const openMenuEvaluationIds = ref([])
 const pendingEditRowId = ref(undefined)
 const pendingInstructor = ref(undefined)
 const rules = {
@@ -819,6 +820,10 @@ const instructorConfirmationText = instructor => {
     is not currently listed in SIS data as an instructor for any courses.`
 }
 
+const isRowActive = evaluation => {
+  return [focusedEditButtonEvaluationId.value, hoverId.value, ...openMenuEvaluationIds.value].includes(evaluation.id)
+}
+
 const isEditing = evaluation => {
   return editRowId.value === evaluation.id
 }
@@ -900,6 +905,27 @@ const onEditEvaluation = evaluation => {
     selectedEvaluationType.value = get(evaluation, 'evaluationType.id')
     selectedStartDate.value = evaluation.startDate
     putFocusNextTick(`${props.readonly ? '' : 'select-evaluation-status'}`)
+  }
+}
+
+const onMouseenterRow = evaluation => {
+  nextTick(() => {
+    hoverId.value = evaluation.id
+  })
+}
+
+const onMouseleaveRow = evaluation => {
+  if (!openMenuEvaluationIds.value.includes(evaluation.id)) {
+    hoverId.value = null
+  }
+}
+
+const onToggleEditMenu = (isOpen, evaluation) => {
+  if (isOpen) {
+    openMenuEvaluationIds.value.push(evaluation.id)
+    focusedEditButtonEvaluationId.value = evaluation.id
+  } else {
+    pull(openMenuEvaluationIds.value, evaluation.id)
   }
 }
 
