@@ -40,7 +40,7 @@
             :action="publish"
             aria-describedby="blockers"
             color="secondary"
-            :disabled="isExporting || !!size(blockers) || !evaluations.length"
+            :disabled="isExporting || !isEmpty(blockers) || isEmpty(confirmed)"
             :in-progress="isExporting"
             size="large"
             :text="isExporting ? 'Publishing...' : 'Publish'"
@@ -121,11 +121,9 @@ import {mdiAlertCircle, mdiRefresh, mdiTrayArrowDown} from '@mdi/js'
 import {nextTick, onMounted, ref} from 'vue'
 import {useContextStore} from '@/stores/context'
 import {useDepartmentStore} from '@/stores/department/department-edit-session'
-import {storeToRefs} from 'pinia'
 
 const contextStore = useContextStore()
 const departmentStore = useDepartmentStore()
-const {evaluations} = storeToRefs(departmentStore)
 const blockers = ref({})
 const confirmed = ref([])
 const dateFormat = DateTime.DATETIME_SHORT_WITH_SECONDS
