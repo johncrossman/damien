@@ -108,7 +108,7 @@ import ConfirmDialog from '@/components/util/ConfirmDialog'
 import UpdateEvaluations from '@/components/evaluation/UpdateEvaluations'
 import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
-import {chain, each, every, filter as _filter, get, has, includes, map, noop, uniq} from 'lodash'
+import {chain, compact, each, every, filter as _filter, get, has, includes, map, noop, uniq} from 'lodash'
 import {computed, inject, onMounted, ref, watch} from 'vue'
 import {mdiAlertCircle} from '@mdi/js'
 import {storeToRefs} from 'pinia'
@@ -294,9 +294,16 @@ const onConfirmDuplicate = options => {
 const onConfirmEdit = options => {
   const selected = _filter(evaluations.value, e => includes(selectedEvaluationIds.value, e.id))
   bulkUpdateOptions.value = options
-  if ('confirmed' === bulkUpdateOptions.value.evaluationStatus) {
-    markAsDoneWarning.value = validateMarkAsDone(selected)
-  }
+  const evaluationsToValidate = compact(map(selected, e => {
+    if ((bulkUpdateOptions.value.evaluationStatus || e.status) === 'confirmed') {
+      return {
+        ...e,
+        status: bulkUpdateOptions.value.evaluationStatus || e.status,
+        startDate: bulkUpdateOptions.value.startDate || e.startDate
+      }
+    }
+  }))
+  markAsDoneWarning.value = validateMarkAsDone(evaluationsToValidate)
   if (!markAsDoneWarning.value) {
     validateAndUpdate('edit')
   }
