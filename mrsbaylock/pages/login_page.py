@@ -59,7 +59,7 @@ class LoginPage(DamienPages):
         self.wait_for_element_and_type(LoginPage.PASSWORD_INPUT, app.config['DEVELOPER_AUTH_PASSWORD'])
         self.wait_for_element_and_click(LoginPage.DEV_AUTH_LOGIN_BUTTON)
         time.sleep(1)
-        if user and dept and len(user.dept_roles) > 1:
+        if user and dept and len(user.dept_roles) > 1 and f'/department/{dept.dept_id}?' not in self.driver.current_url:
             self.click_contact_dept_link(dept)
 
     def wait_for_not_auth(self):

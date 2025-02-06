@@ -133,6 +133,10 @@ class Evaluation(object):
     def alpha_suffix(self):
         return self.data['alpha_suffix']
 
+    @dept.setter
+    def dept(self, value):
+        self.data['dept'] = value
+
     @x_listing_ccns.setter
     def x_listing_ccns(self, value):
         self.data['x_listing_ccns'] = value

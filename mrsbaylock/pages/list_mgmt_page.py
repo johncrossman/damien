@@ -131,7 +131,7 @@ class ListMgmtPage(DamienPages):
         self.when_not_present((By.XPATH, ListMgmtPage.manual_instr_row_xpath(user)), utils.get_short_timeout())
 
     SERVICE_ALERT_INPUT = (By.ID, 'service-announcement-textarea')
-    SERVICE_ALERT_POST_CBX = (By.XPATH, '//input[@id="service-announcement-published"]/..')
+    SERVICE_ALERT_POST_CBX = (By.ID, 'service-announcement-published')
     SERVICE_ALERT_SAVE_BUTTON = (By.ID, 'service-announcement-save')
 
     def enter_service_alert(self, alert_text):
@@ -145,5 +145,4 @@ class ListMgmtPage(DamienPages):
         self.wait_for_element_and_click(ListMgmtPage.SERVICE_ALERT_SAVE_BUTTON)
 
     def is_service_alert_posted(self):
-        loc = By.ID, 'service-announcement-published'
-        return True if (self.element(loc).get_attribute('aria-checked') == 'true') else False
+        return self.element(self.SERVICE_ALERT_POST_CBX).is_selected()

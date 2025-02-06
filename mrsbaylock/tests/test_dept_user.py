@@ -44,6 +44,7 @@ class TestDeptUser:
     depts = utils.get_participating_depts()
     dept_forms = evaluation_utils.get_all_dept_forms()
     dept = evaluation_utils.get_dept_with_listings_or_shares(term, depts)
+    app.logger.info(f'Test Dept: {vars(dept)}')
     evaluations = evaluation_utils.get_evaluations(term, dept, log=True)
     contact = dept.users[0]
 
@@ -193,7 +194,7 @@ class TestDeptUser:
 
     def test_set_confirmed_status_bulk(self):
         # Un-mark all rows to begin with
-        self.dept_details_dept_page.reload_page()
+        self.dept_details_dept_page.load_dept_page(self.dept)
         self.dept_details_dept_page.wait_for_eval_rows()
         self.dept_details_dept_page.select_unmarked_filter()
         self.dept_details_dept_page.select_review_filter()

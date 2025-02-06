@@ -88,7 +88,7 @@ class TestListManagement:
         self.dept_details_admin_page.save_eval_changes(self.eval_unmarked)
         self.eval_unmarked.dept_form = self.form
         self.eval_unmarked.eval_type = self.eval_type
-        self.dept_details_admin_page.wait_for_eval_rows()
+        self.dept_details_admin_page.wait_for_eval_row(self.eval_unmarked)
         assert EvaluationStatus.UNMARKED.value['ui'] in self.dept_details_admin_page.eval_status(self.eval_unmarked)
         assert self.form in self.dept_details_admin_page.eval_dept_form(self.eval_unmarked)
         assert self.eval_type in self.dept_details_admin_page.eval_type(self.eval_unmarked)
@@ -102,7 +102,7 @@ class TestListManagement:
         self.eval_to_review.dept_form = self.form
         self.eval_to_review.eval_type = self.eval_type
         self.eval_to_review.status = EvaluationStatus.FOR_REVIEW
-        self.dept_details_admin_page.wait_for_eval_rows()
+        self.dept_details_admin_page.wait_for_eval_row(self.eval_to_review)
         assert EvaluationStatus.FOR_REVIEW.value['ui'] in self.dept_details_admin_page.eval_status(self.eval_to_review)
         assert self.form in self.dept_details_admin_page.eval_dept_form(self.eval_to_review)
         assert self.eval_type in self.dept_details_admin_page.eval_type(self.eval_to_review)
@@ -116,7 +116,7 @@ class TestListManagement:
         self.eval_confirmed.dept_form = self.form
         self.eval_confirmed.eval_type = self.eval_type
         self.eval_confirmed.status = EvaluationStatus.CONFIRMED
-        self.dept_details_admin_page.wait_for_eval_rows()
+        self.dept_details_admin_page.wait_for_eval_row(self.eval_confirmed)
         assert EvaluationStatus.CONFIRMED.value['ui'] in self.dept_details_admin_page.eval_status(self.eval_confirmed)
         assert self.form in self.dept_details_admin_page.eval_dept_form(self.eval_confirmed)
         assert self.eval_type in self.dept_details_admin_page.eval_type(self.eval_confirmed)
@@ -132,7 +132,7 @@ class TestListManagement:
         self.dept_details_admin_page.save_eval_changes(self.eval_confirmed, EvaluationStatus.CONFIRMED)
         dupe.dept_form = self.form
         dupe.status = EvaluationStatus.CONFIRMED
-        self.dept_details_admin_page.wait_for_eval_rows()
+        self.dept_details_admin_page.wait_for_eval_row(dupe)
         assert self.instructor.uid in self.dept_details_admin_page.eval_instructor(dupe)
         assert self.instructor.first_name in self.dept_details_admin_page.eval_instructor(dupe)
         assert self.instructor.last_name in self.dept_details_admin_page.eval_instructor(dupe)
