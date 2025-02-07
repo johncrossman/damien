@@ -39,9 +39,16 @@ export function validateMarkAsDone(selectedEvaluations: any[]): string | undefin
   let warningMessage: string | undefined = undefined
   const evaluationsEnded = []
   each(selectedEvaluations, e => {
-    const startDate = DateTime.isDateTime(e.startDate) ? e.startDate : DateTime.fromISO(e.startDate)
+    let startDate
+    if (DateTime.isDateTime(e.startDate)) {
+      startDate = e.startDate
+    } else if (e.startDate instanceof Date) {
+      startDate = DateTime.fromJSDate(e.startDate)
+    } else {
+      startDate = DateTime.fromISO(e.startDate)
+    }
     const evalStateOffset = startDate.diff(DateTime.fromJSDate(e.meetingDates.start), ['days'])
-    const endDate = (evalStateOffset < 70) ? startDate.plus({days: 13}) : startDate.plus({days: 20})
+    const endDate = (evalStateOffset.values.days < 70) ? startDate.plus({days: 13}) : startDate.plus({days: 20})
     if (endDate.diffNow() < 0) {
       evaluationsEnded.push(e)
     }
