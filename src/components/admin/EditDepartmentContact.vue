@@ -184,7 +184,7 @@ import PersonLookup from '@/components/admin/PersonLookup'
 import ProgressButton from '@/components/util/ProgressButton'
 import {alertScreenReader, oxfordJoin, putFocusNextTick} from '@/lib/utils'
 import {cloneDeep, differenceBy, find, get, isEmpty, isNil, last, map, remove, size, some, sortBy, upperCase} from 'lodash'
-import {computed, onMounted, ref, watch} from 'vue'
+import {computed, onMounted, onUnmounted, ref, watch} from 'vue'
 import {getUserDepartmentForms} from '@/api/user'
 import {storeToRefs} from 'pinia'
 import {useDepartmentStore} from '@/stores/department/department-edit-session'
@@ -253,6 +253,10 @@ onMounted(() => {
   departmentFormsCount.value = size(departmentStore.allDepartmentForms)
   populateForm(props.contact)
   putFocusNextTick('add-contact-sub-header')
+})
+
+onUnmounted(() => {
+  departmentStore.setDisableControls(false)
 })
 
 const fetchUserDepartmentForms = uid => {
