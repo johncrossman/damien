@@ -45,15 +45,18 @@
         <v-row justify="start">
           <v-col cols="12" md="6">
             <div class="border-sm pa-3">
-              <v-expansion-panels v-model="contactsPanel" flat>
+              <v-expansion-panels
+                v-model="contactsPanel"
+                flat
+                @update:model-value="v => toggleCollapseAllContacts(isUndefined(v))"
+              >
                 <v-expansion-panel class="bg-transparent">
                   <template #default>
                     <div class="d-flex align-center flex-wrap justify-space-between">
                       <h2 class="ml-2">Department Contacts</h2>
                       <v-expansion-panel-title
-                        class="pl-1 pr-2 py-0 w-fit-content"
+                        class="px-2 px-sm-6 py-0 w-fit-content"
                         hide-actions
-                        @click="collapseAllContacts"
                       >
                         <template #default="{expanded}">
                           <span v-if="!expanded">
@@ -113,6 +116,7 @@
                 <v-btn
                   v-if="!isAddingContact"
                   id="add-dept-contact-btn"
+                  class="ml-2"
                   color="tertiary"
                   :disabled="disableControls"
                   :prepend-icon="mdiPlusThick"
@@ -175,7 +179,7 @@ import TermSelect from '@/components/util/TermSelect'
 import {NUMBER_OF_THE_BEAST, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {alertScreenReader, getCatalogListings, putFocusNextTick} from '@/lib/utils'
 import {computed, onMounted, ref, watch} from 'vue'
-import {filter as _filter, get, includes, isEmpty, size, sortBy} from 'lodash'
+import {filter as _filter, get, includes, isEmpty, isUndefined, size, sortBy} from 'lodash'
 import {mdiChevronDown, mdiClose, mdiMinusBoxMultipleOutline, mdiPlusBoxMultipleOutline, mdiPlusThick} from '@mdi/js'
 import {storeToRefs} from 'pinia'
 import {useContextStore} from '@/stores/context'
@@ -232,12 +236,6 @@ const cancelSendNotification = () => {
   putFocusNextTick('open-notification-form-btn')
 }
 
-const collapseAllContacts = () => {
-  if (contactsPanel.value === 0) {
-    contactDetailsPanel.value = []
-  }
-}
-
 const onCancelAddContact = () => {
   isAddingContact.value = false
   alertScreenReader('Canceled. Nothing saved.')
@@ -261,6 +259,12 @@ const refresh = () => {
     departmentStore.setShowTheOmenPoster(route.query.n === NUMBER_OF_THE_BEAST)
     contextStore.loadingComplete(`${department.deptName} ${contextStore.selectedTermName}`)
   })
+}
+
+const toggleCollapseAllContacts = isCollapsed => {
+  if (isCollapsed) {
+    contactDetailsPanel.value = []
+  }
 }
 </script>
 
